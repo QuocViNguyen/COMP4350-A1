@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+.collapsible {
+  background-color: #777;
+  color: white;
+  cursor: pointer;
+  padding: 18px;
+  width: 100%;
+  border: none;
+  text-align: left;
+  outline: none;
+  font-size: 15px;
+}
+
+.active, .collapsible:hover {
+  background-color: rgb(73, 160, 211);
+}
+
+.content {
+  padding: 0 18px;
+  display: none;
+  overflow: hidden;
+  background-color: #f1f1f1;
+}
+</style>
+
+
+</head>
+<body>
+  <h2>Enter the tag you want to look up, and press submit</h2>
+  <form action="javascript:fetchAPI()">
+      <label for="fname">Tag:</label>
+      <input type="text" id="tagTopic" name="tagTopic"><br><br>
+      <input type="submit" value="Submit">
+    </form>
+
+  <div id="stackPostContainer">
+  </div>
+</body>
+
+<script>
+    //Function to fetch data from stackoverflow API
+    function fetchAPI(){
+
+
+      var tag = document.getElementById("tagTopic").value;
+      console.log(tag);
+      if (tag == "") {
+      alert("Name must be filled out");
+      return false;
+      }
+
+      document.body.innerHTML +='<h2>Most voted questions: </h2>';
+      var startTime = (new Date()).getTime(),
+      endTime;
+    
+        var today= new Date();
+        var lastWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7);
+        var lastWeekCode = Date.parse(lastWeek) / 1000;
+    
+        var url = "https://api.stackexchange.com/2.2/search?fromdate="+lastWeekCode+"&order=desc&pagesize=10&sort=votes&tagged="+tag+"&site=stackoverflow&filter=!LYA)N_IyF50c.la_czzy3H";
+        
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", url);
+        var myTitle = '';
+        var myContent = '';
+        xhr.onreadystatechange = function (){
+          if (xhr.readyState === 4) {
+              var myResponse = JSON.parse(xhr.responseText);
+              console.log(myResponse);
+      
+              var parsed = myResponse.items;
+      
+              for(i = 0; i < parsed.length; i++){
+                  myTitle += '<button type="button" class="collapsible">Title: ';
+                  
+                  myTitle += parsed[i].title;
+                  myTitle += "<br />";
+                  myTitle += "  Creation date:";
+                  myTitle += new Date(parsed[i].creation_date * 1000);
+                  myTitle += "<br />";
+                  myTitle += "Votes: ";
+                  myTitle += parsed[i].up_vote_count;
+                  myTitle += '</button>';
+                  console.log(parsed[i].title);
+      
+                  
+                  myContent += '<div class="content">';
+                  myContent += parsed[i].body;
+                  if(parsed[i].answers !=null){
+                      myContent += '<p style="background-color:powderblue;">ANSWERS</p>';
+                      for(j = 0; j < parsed[i].answers.length; j++){
+                          myContent += parsed[i].answers[j].body;
+
+                          if(parsed[i].answers[j].comments != null){
+                            myContent += '<p style="background-color:powderblue;">Comments</p>';
+                            for(k = 0; k < parsed[i].answers[j].comments.length; k++){
+                              myContent += parsed[i].answers[j].comments[k].body;
+                            }
+                          }
+                          myContent += '<br /><br />';
+                      }
+                  }
+                  myContent += '</div>';
+                  document.body.innerHTML += myTitle;
+                  document.body.innerHTML += myContent;
+
+                  myTitle ='';
+                  myContent= '';
+              }
+              // endTime = (new Date()).getTime();
+              // var totalTime = endTime - startTime;
+              // var responseTime = '<p>Response time: '+totalTime+' ms</p>';
+              // document.body.innerHTML += responseTime;
+
+              var coll = document.getElementsByClassName("collapsible");
+              var i;
+              
+              for (i = 0; i < coll.length; i++) {
+              coll[i].addEventListener("click", function() {
+                  this.classList.toggle("active");
+                  var content = this.nextElementSibling;
+                  if (content.style.display === "block") {
+                  content.style.display = "none";
+                  } else {
+                  content.style.display = "block";
+                  }
+              });
+              }
+              document.body.innerHTML +='<h2>Newest questions: </h2>';
+              var urlnewest = "https://api.stackexchange.com/2.2/search?fromdate="+lastWeekCode+"&order=desc&pagesize=10&sort=creation&tagged="+tag+"&site=stackoverflow&filter=!LYA)N_IyF50c.la_czzy3H";
+              var xhrnew = new XMLHttpRequest();
+              xhrnew.open("GET",urlnewest);
+              var myTitleNew = '';
+              var myContentNew = '';
+              myTitle ='';
+              myContent = '';
+
+           xhrnew.onreadystatechange = function(){
+            if(xhrnew.readyState === 4){
+              var myResponse = JSON.parse(xhrnew.responseText);
+              console.log(myResponse);
+      
+              var parsed = myResponse.items;
+      
+              for(i = 0; i < parsed.length; i++){
+                  myTitle += '<button type="button" class="collapsible">Title: ';
+                  
+                  myTitle += parsed[i].title;
+                  myTitle += "<br />";
+                  myTitle += "  Creation date:";
+                  myTitle += new Date(parsed[i].creation_date * 1000);
+                  myTitle += "<br />";
+                  myTitle += "Votes: ";
+                  myTitle += parsed[i].up_vote_count;
+                  myTitle += '</button>';      
+                  
+                  myContent += '<div class="content">';
+                  myContent += parsed[i].body;
+                  if(parsed[i].answers !=null){
+                      myContent += '<p style="background-color:powderblue;">ANSWERS</p>';
+                      for(j = 0; j < parsed[i].answers.length; j++){
+                          myContent += parsed[i].answers[j].body;
+
+                          if(parsed[i].answers[j].comments != null){
+                            myContent += '<p style="background-color:powderblue;">Comments</p>';
+                            for(k = 0; k < parsed[i].answers[j].comments.length; k++){
+                              myContent += parsed[i].answers[j].comments[k].body;
+                            }
+                          }
+                          myContent += '<br /><br />';
+                      }
+                  }
+                  myContent += '</div>';
+
+                  document.body.innerHTML += myTitle;
+                  document.body.innerHTML += myContent;
+
+                  myTitle ='';
+                  myContent= '';
+      
+              }
+
+              endTime = (new Date()).getTime();
+              var totalTime = endTime - startTime;
+              var responseTime = '<p>Response time: '+totalTime+' ms</p>';
+              document.body.innerHTML += responseTime;
+
+              var coll = document.getElementsByClassName("collapsible");
+              var i;
+              
+              for (i = 0; i < coll.length; i++) {
+              coll[i].addEventListener("click", function() {
+                  this.classList.toggle("active");
+                  var content = this.nextElementSibling;
+                  if (content.style.display === "block") {
+                  content.style.display = "none";
+                  } else {
+                  content.style.display = "block";
+                  }
+              });
+              }
+
+            }
+          }
+          xhrnew.send();
+
+          }
+          
+          
+      };
+        xhr.send();
+    }
+    
+    var coll = document.getElementsByClassName("collapsible");
+    var i;
+    
+    for (i = 0; i < coll.length; i++) {
+      coll[i].addEventListener("click", function() {
+        this.classList.toggle("active");
+        var content = this.nextElementSibling;
+        if (content.style.display === "block") {
+          content.style.display = "none";
+        } else {
+          content.style.display = "block";
+        }
+      });
+    }
+    </script>
+</html>
